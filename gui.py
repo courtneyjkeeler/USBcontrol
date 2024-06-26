@@ -347,18 +347,18 @@ class UserInterface:
                         dpg.add_menu_item(label="Comments", callback=self._show_popup_window,
                                           user_data={'msg': "Add comments below:"})
 
-                dpg.add_menu_item(label="Help", callback=self._show_popup_window, user_data={'msg': "Help"})
+                # dpg.add_menu_item(label="Help", callback=self._show_popup_window, user_data={'msg': "Help"})
 
             with dpg.group(label="overall", horizontal=True):
                 with dpg.group(label="left_side"):
                     with dpg.child_window(tag="FTX", width=400, height=440) as ftx_win:
                         with dpg.group(tag="ftx_settings_group"):
-                            h1 = dpg.add_text("FTX", pos=[195,5])
+                            h1 = dpg.add_text("FTX", pos=[195, 5])
                             with dpg.group(tag="ftx_connect_buttons_group", horizontal=True):
                                 dpg.add_button(label="Connect", tag="ftx_connect_button", callback=self._connect_ftx,
-                                               pos=[180,30])
+                                               pos=[180, 30])
                                 dpg.add_button(label="Disconnect", tag="ftx_disconnect_button",
-                                               callback=self._disconnect_ftx, show=False, pos=[180,30])
+                                               callback=self._disconnect_ftx, show=False, pos=[180, 30])
                             t1 = dpg.add_text("LNA Bias Enable", color=(37, 37, 37))
                             dpg.add_checkbox(label="", tag="lna_bias_checkbox", enabled=False,
                                              callback=self._lna_bias_checked)
