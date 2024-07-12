@@ -32,11 +32,11 @@ class FRX:
         self.i2c = i2c
 
         self.atten = TCA6408A(i2c.get_port(ADDR_ATTEN))
-        self.adc = TLA2528(i2c.get_port(ADDR_ADC))
+        # self.adc = TLA2528(i2c.get_port(ADDR_ADC))
         self.uuid = i2c.get_port(ADDR_UUID)
 
         # Perform initial setup
-        self._setup_adc()
+        # self._setup_adc()
 
     def _read_current(self, pin: int, sense_r: float) -> float:
         return raw_to_current(self.adc.analog_read(pin), SENSE_GAIN, sense_r, VREF)

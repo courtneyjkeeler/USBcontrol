@@ -95,12 +95,14 @@ class UserInterface:
         """
         # error = None
         self.i2c_receive = I2cController()
-        dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
+        # dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
+        dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
         if dev is None:
             add_text_to_console('USB Device not found!')
             return
         try:
-            self.i2c_receive.configure(dev, interface=1)
+            # self.i2c_receive.configure(dev, interface=1)
+            self.i2c_receive.configure(dev, interface=2)
             self.frx = FRX(self.i2c_receive)
         except I2cIOError:
             # Log the error to the console
@@ -133,8 +135,8 @@ class UserInterface:
         Calls the configure function on the I2C ports.
         """
 
-        # dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
-        dev = usb.core.find(idVendor=1027, idProduct=24592)
+        # dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)  # Custom
+        dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
         if dev is None:
             add_text_to_console("Could not find the USB device, check connection and try again.")
             # dpg.add_text("Could not find the USB device, check connection and try again.",
@@ -293,13 +295,13 @@ class UserInterface:
             display accordingly
         """
         add_text_to_console("Reading FRX RF monitor...")
-        dpg.set_value(self._frx_rfmon_id, str(self.frx.get_rms_power()))
+        # dpg.set_value(self._frx_rfmon_id, str(self.frx.get_rms_power()))
         add_text_to_console("Reading FRX PD current...")
-        dpg.set_value(self._pd_current_id, str(self.frx.get_pd_current()))
+        # dpg.set_value(self._pd_current_id, str(self.frx.get_pd_current()))
         add_text_to_console("Reading FRX UUID...")
         dpg.set_value(self._frx_sn_id, str(self.frx.get_uuid()))
         add_text_to_console("Reading FRX temperature...")
-        dpg.set_value(self._temp_id, str(self.frx.get_temp()))
+        # dpg.set_value(self._temp_id, str(self.frx.get_temp()))
         add_text_to_console("Reading output attenuation value...")
         dpg.set_value("frx_output_attn", self.frx.atten.read() / 4)
 
@@ -391,7 +393,7 @@ class UserInterface:
                                 dpg.add_button(label="Connect", tag="frx_connect_button", callback=self._connect_frx,
                                                pos=[180,30])
                                 dpg.add_button(label="Disconnect", tag="frx_disconnect_button",
-                                               callback=self._disconnect_ftx, show=False, pos=[180,30])
+                                               callback=self._disconnect_frx, show=False, pos=[180,30])
                             t8 = dpg.add_text("Photodiode Current (mA)", color=(37, 37, 37))
                             self._pd_current_id = dpg.add_text("0.0", tag="frx_pd_current", color=(69,69,69))
                             dpg.add_spacer()
