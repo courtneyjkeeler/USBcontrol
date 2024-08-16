@@ -117,14 +117,14 @@ class UserInterface:
         """
         # error = None
         self.i2c_receive = I2cController()
-        # dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
-        dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
+        dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
+        # dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
         if dev is None:
             add_text_to_console('USB Device not found!')
             return
         try:
-            # self.i2c_receive.configure(dev, interface=1)
-            self.i2c_receive.configure(dev, interface=2)
+            self.i2c_receive.configure(dev, interface=1)
+            # self.i2c_receive.configure(dev, interface=2)
             self.frx = FRX(self.i2c_receive)
         except I2cIOError:
             # Log the error to the console
@@ -157,8 +157,8 @@ class UserInterface:
         Calls the configure function on the I2C ports.
         """
 
-        # dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)  # Custom
-        dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
+        dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)  # Custom
+        # dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
         if dev is None:
             add_text_to_console("Could not find the USB device, check connection and try again.")
             # dpg.add_text("Could not find the USB device, check connection and try again.",
