@@ -1,9 +1,8 @@
+import os
+import time
+
 import dearpygui.dearpygui as dpg
-from pyftdi.i2c import I2cController, I2cIOError, I2cTimeoutError
-from rfof import Ftx
-from rfof import Frx
-import usb.core
-import usb.util
+from rfof import Ftx, Frx
 import time
 
 
@@ -19,8 +18,6 @@ class UserInterface:
     def __init__(self):
         self.ftx = None
         self.frx = None
-        self.i2c_receive = None
-        self.i2c_transmit = None
         self._lna_current_id = 0
         self._lna_voltage_id = 0
         self._laser_current_id = 0
@@ -38,6 +35,8 @@ class UserInterface:
         self._frx_attn_id = 0
         self.comments = ""
         self.opt_attn = "None"
+
+        self.time = time.time()
 
         dpg.create_context()
         dpg.create_viewport(title='USB-I2C Control Program', width=845, height=630)
@@ -75,10 +74,8 @@ class UserInterface:
         """
         if self.frx is not None:
             add_text_to_console("Disconnecting from FRX board...")
-            self.i2c_receive.close()
         if self.ftx is not None:
             add_text_to_console("Disconnecting from FTX board...")
-            self.i2c_transmit.close()
 
     def save_data(self, file_path):
         # TODO: update for new monitor fields
@@ -118,19 +115,12 @@ class UserInterface:
 
         Calls the configure function on the I2C ports.
         """
-        self.i2c_receive = I2cController()
-        dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)
-        # dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
-        if dev is None:
-            add_text_to_console('USB Device not found!')
-            return
         try:
-            self.i2c_receive.configure(dev, interface=1)
-            # self.i2c_receive.configure(dev, interface=2)
-            self.frx = Frx(self.i2c_receive)
-        except I2cIOError:
+            self.frx = Frx(0)
+        except ValueError as err:
             # Log the error to the console
             add_text_to_console("Could not connect to FRX board, check connection and try again.")
+            add_text_to_console(str(err))
             return
 
         add_text_to_console("Connected to the FRX board. Control fields are now enabled.")
@@ -157,17 +147,9 @@ class UserInterface:
         Calls the configure function on the I2C ports.
         """
 
-        dev = usb.core.find(idVendor=0x0403, idProduct=0x6048)  # Custom
-        # dev = usb.core.find(idVendor=1027, idProduct=24592)  # Tigard
-        if dev is None:
-            add_text_to_console("Could not find the USB device, check connection and try again.")
-            return
-
-        self.i2c_transmit = I2cController()
         try:
-            self.i2c_transmit.configure(dev, interface=2)
-            self.ftx = Ftx(self.i2c_transmit)
-        except I2cIOError:
+            self.ftx = Ftx(1)
+        except ValueError:
             # Log the error to the console
             add_text_to_console("Could not connect to FTX board, check connection and try again.")
             return
@@ -196,11 +178,9 @@ class UserInterface:
     def _disconnect_ftx(self, sender=None, data=None) -> None:
         """Callback for clicking the disconnect button.
 
-        Calls the disconnect function on the SA to terminate the session.
-        """
+        Calls the disconnect function on the SA to terminate the session.        """
         dpg.configure_item("ftx_connect_button", show=True)
         dpg.configure_item("ftx_disconnect_button", show=False)
-        self.i2c_transmit.close()
         add_text_to_console("FTX board connection closed. OK to unplug.")
         self.ftx = None
         # Disable all the settings inputs
@@ -225,7 +205,6 @@ class UserInterface:
         """
         dpg.configure_item("frx_connect_button", show=True)
         dpg.configure_item("frx_disconnect_button", show=False)
-        self.i2c_receive.close()
         self.frx = None
         # Disable all the settings inputs
         dpg.configure_item("frx_output_attn", enabled=False)
@@ -326,7 +305,7 @@ class UserInterface:
             if new_value != set_value:
                 add_text_to_console("**WARNING** Value input: " + str(round(new_value, 2)) + ", value set: " +
                                     str(set_value) + ".")
-        except TimeoutError:
+        except RuntimeError:
             add_text_to_console("Timeout while reading FRX attenuation value.")
 
     def _update_mon_frx(self) -> None:
@@ -335,12 +314,40 @@ class UserInterface:
         """
         try:
             dpg.set_value(self._frx_rfmon_id, "{:.2f}".format(self.frx.get_rf_power()))
+        except RuntimeError:
+            add_text_to_console("I2C error while updating FRX RF power.")
+            now = time.time()
+            print("RF power. Elapsed time: ", now - self.time)
+            self.time = now
+        try:
             dpg.set_value(self._pd_current_id, "{:.2f}".format(self.frx.get_pd_current()))
+        except RuntimeError:
+            add_text_to_console("I2C error while updating FRX PD current.")
+            now = time.time()
+            print("PD current. Elapsed time: ", now - self.time)
+            self.time = now
+        try:
             dpg.set_value(self._frx_sn_id, self.frx.get_uid())
+        except RuntimeError:
+            add_text_to_console("I2C error while updating FRX UID.")
+            now = time.time()
+            print("UID. Elapsed time: ", now - self.time)
+            self.time = now
+        try:
             dpg.set_value(self._temp_id, "{:.2f}".format(self.frx.get_temp()))
+        except RuntimeError as err:
+            add_text_to_console("I2C error while updating FRX temp.")
+            now = time.time()
+            print("Temp. Elapsed time: ", now - self.time)
+            print(err)
+            self.time = now
+        try:
             dpg.set_value(self._frx_attn_id, "{:.2f}".format(self.frx.get_atten()))
-        except TimeoutError:
-            add_text_to_console("Timeout while updating FRX monitor values.")
+        except RuntimeError:
+            add_text_to_console("I2C error while updating FRX atten.")
+            now = time.time()
+            print("Atten. Elapsed time: ", now-self.time)
+            self.time = now
 
     def _update_mon_ftx(self) -> None:
         """ Reads all the monitor data and updates the
@@ -358,7 +365,7 @@ class UserInterface:
             dpg.set_value(self._ftx_temp_id, "{:.2f}".format(self.ftx.get_temp()))
             dpg.set_value(self._ftx_vdda_id, "{:.2f}".format(self.ftx.get_vdda_voltage()))
             dpg.set_value(self._ftx_vdd_id, "{:.2f}".format(self.ftx.get_vdd_voltage()))
-        except TimeoutError:
+        except RuntimeError:
             add_text_to_console("Timeout while reading FTX monitor values.")
 
     def _make_gui(self) -> None:

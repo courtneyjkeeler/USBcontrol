@@ -1,2 +1,1 @@
 dearpygui~=1.11.1
-pyftdi~=0.55.4
