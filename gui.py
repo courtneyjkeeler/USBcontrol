@@ -327,7 +327,7 @@ class UserInterface:
             print("PD current. Elapsed time: ", now - self.time)
             self.time = now
         try:
-            dpg.set_value(self._frx_sn_id, self.frx.get_uid())
+            dpg.set_value(self._frx_sn_id, "{:#X}".format(self.frx.get_uid()))
         except RuntimeError:
             add_text_to_console("I2C error while updating FRX UID.")
             now = time.time()
