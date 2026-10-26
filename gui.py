@@ -258,7 +258,7 @@ class FtxMon:
             dpg.set_value(self._lna_voltage_id, "{:.4f}".format(self._ftx.get_lna_voltage()))
             dpg.set_value(self._laser_current_id, "{:.4f}".format(self._ftx.get_ld_current()))
             dpg.set_value(self._laserpd_mon_id, "{:.4f}".format(self._ftx.get_pd_current()))
-            dpg.set_value(self._sn_id, self._ftx.get_uid())
+            dpg.set_value(self._sn_id, "{:02X}".format(self._ftx.get_uid()))
             dpg.set_value(self._rfmon_id, "{:.4f}".format(self._ftx.get_rf_power()))
             dpg.set_value(self._attn_id, "{:.4f}".format(self._ftx.get_atten()))
             dpg.set_value(self._temp_id, "{:.4f}".format(self._ftx.get_temp()))
